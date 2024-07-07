@@ -38,7 +38,7 @@ node extract.js
 ```
 pour lire un autre fichier csv, disons clients2.csv, il faut l'appeler avec l'argument en plus
 ```bash
-node extract.js --file=python_scripts/clients2.csv
+node extract.js --file=clients2.csv
 ```
 les résultats seront affichés directement dans l'invite de commande
 ## Auteur
