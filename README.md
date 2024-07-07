@@ -11,7 +11,7 @@ Avant de commencer, assurez-vous d'avoir les logiciels suivants installés :
 - [Node.js](https://nodejs.org/)
 - [Python](https://www.python.org/)
 - npm
-- git
+- [git](https://git-scm.com/downloads)
 
 ## Installation
 
