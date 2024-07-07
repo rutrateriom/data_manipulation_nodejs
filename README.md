@@ -10,7 +10,7 @@ Avant de commencer, assurez-vous d'avoir les logiciels suivants installés :
 
 - [Node.js](https://nodejs.org/)
 - [Python](https://www.python.org/)
-- [npm](https://www.npmjs.com/)
+- [npm]
 
 ## Installation
 
