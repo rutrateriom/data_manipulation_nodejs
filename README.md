@@ -15,8 +15,7 @@ Avant de commencer, assurez-vous d'avoir les logiciels suivants installés :
 
 ## Installation
 
-Clonez le dépôt et installez les dépendances nécessaires.
-Créez le répértoire data_manupulation_nodejs
+Clonez le dépôt et installez les dépendances nécessaires en vous plaçant dans le répertoire désiré.
 ```bash
 git clone https://github.com/rutrateriom/data_manipulation_nodejs.git
 cd data_manipulation_nodejs
