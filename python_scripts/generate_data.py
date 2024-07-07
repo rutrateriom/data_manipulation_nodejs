@@ -1,44 +1,133 @@
-import sys
-sys.path.append('./libs')
-# j'ajoute faker depuis le répértoire du projet pour éviter d'avoir à le réinstaller.
+const fs = require('fs');
+const csv = require('csv-parser');
+const minimist = require('minimist');
 
+function extractData(filePath) {
+    const results = [];
 
-from faker import Faker
-import csv
-import random
-from datetime import datetime, timedelta
+    fs.createReadStream(filePath)
+        .pipe(csv())
+        .on('data', (data) => {
+            data.total_amount_spent = parseFloat(data.total_amount_spent);
+            data.rigide_purchased = parseInt(data.rigide_purchased, 10);
+            data.retro_purchased = parseInt(data.retro_purchased, 10);
+            data.original_purchased = parseInt(data.original_purchased, 10);
+            data.calendar_purchased = parseInt(data.calendar_purchased, 10);
+            data.grand_purchased = parseInt(data.grand_purchased, 10);
+            data.magnets_purchased = parseInt(data.magnets_purchased, 10);
+            data.cadre_purchased = parseInt(data.cadre_purchased, 10);
 
+            // Calculer l'âge
+            const birthDate = new Date(data.birth_date);
+            const ageDifMs = Date.now() - birthDate.getTime();
+            const ageDate = new Date(ageDifMs);
+            data.age = Math.abs(ageDate.getUTCFullYear() - 1970);
 
-fake = Faker()
-
-# faker genere aleatoirement des données cohérentes pour simuler les clients.
-
-def generate_clients(num_clients):
-    clients = []
-    for i in range(1, num_clients + 1):
-        clients.append({
-            'client_id': i,
-            'first_name': fake.first_name(),
-            'last_name': fake.last_name(),
-            'email': fake.email(),
-            'birth_date': fake.date_of_birth(minimum_age=18, maximum_age=90).strftime('%Y-%m-%d'),
-            'gender': random.choice(['M', 'F']),
-            'city': fake.city(),
-            'country': fake.country(),
-            'numer_of_purchases': random.randint(1,10),
-            'total_amount_spent' : round(random.uniform(5.0, 500.0), 2)
+            results.push(data);
         })
-    return clients
+        .on('end', () => {
+            console.log('Nombre de clients:', results.length);
 
-# et pour créer le csv qui contient la data
-def write_csv(filename, data):
-    with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
-        fieldnames = data[0].keys()
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(data)
-    print(f'data written in {filename}')
+            // CA et dépense moyenne
+            let totalRevenue = 0;
+            results.forEach(client => {
+                totalRevenue += client.total_amount_spent;
+            });
+            console.log('CA:', totalRevenue.toFixed(2));
+            console.log('Dépense moyenne:', (totalRevenue / results.length).toFixed(2));
 
+            // Clients les plus dépenseurs
+            let maxSpender = results[0];
+            results.forEach(client => {
+                if (client.total_amount_spent > maxSpender.total_amount_spent) {
+                    maxSpender = client;
+                }
+            });
+            console.log('Le meilleur client:', maxSpender.first_name, maxSpender.last_name, '-', maxSpender.total_amount_spent);
 
-clients = generate_clients(100000)
-write_csv('clients.csv', clients)
+            // Ventes par produit
+            let productTotals = {
+                rigide: 0,
+                retro: 0,
+                original: 0,
+                calendar: 0,
+                grand: 0,
+                magnets: 0,
+                cadre: 0
+            };
+            results.forEach(client => {
+                productTotals.rigide += client.rigide_purchased;
+                productTotals.retro += client.retro_purchased;
+                productTotals.original += client.original_purchased;
+                productTotals.calendar += client.calendar_purchased;
+                productTotals.grand += client.grand_purchased;
+                productTotals.magnets += client.magnets_purchased;
+                productTotals.cadre += client.cadre_purchased;
+            });
+            console.log('Ventes par produit:', productTotals);
+
+            // Produits ayant rapporté le plus
+            let productRevenue = {
+                rigide: 0,
+                retro: 0,
+                original: 0,
+                calendar: 0,
+                grand: 0,
+                magnets: 0,
+                cadre: 0
+            };
+            results.forEach(client => {
+                productRevenue.rigide += client.rigide_purchased * 35;
+                productRevenue.retro += client.retro_purchased * 10;
+                productRevenue.original += client.original_purchased * 10;
+                productRevenue.calendar += client.calendar_purchased * 15;
+                productRevenue.grand += client.grand_purchased * 20;
+                productRevenue.magnets += client.magnets_purchased * 20;
+                productRevenue.cadre += client.cadre_purchased * 15;
+            });
+            console.log('Contribution au CA par produit:', productRevenue);
+
+            // Calcul de l'âge le plus représenté
+            let ageCounts = {};
+            results.forEach(client => {
+                if (ageCounts[client.age]) {
+                    ageCounts[client.age]++;
+                } else {
+                    ageCounts[client.age] = 1;
+                }
+            });
+            let maxAge = Object.keys(ageCounts).reduce((a, b) => ageCounts[a] > ageCounts[b] ? a : b);
+            console.log('Âge le plus représenté:', maxAge);
+
+            // Calcul du sexe le plus représenté
+            let genderCounts = { 'M': 0, 'F': 0 };
+            results.forEach(client => {
+                if (genderCounts[client.gender]) {
+                    genderCounts[client.gender]++;
+                } else {
+                    genderCounts[client.gender] = 1;
+                }
+            });
+            let maxGender = genderCounts['M'] > genderCounts['F'] ? 'M' : 'F';
+            console.log('Sexe le plus représenté:', maxGender);
+
+            // Les 3 pays ayant acheté le plus
+            let countryCounts = {};
+            results.forEach(client => {
+                if (countryCounts[client.country]) {
+                    countryCounts[client.country] += client.total_amount_spent;
+                } else {
+                    countryCounts[client.country] = client.total_amount_spent;
+                }
+            });
+            let sortedCountries = Object.keys(countryCounts).sort((a, b) => countryCounts[b] - countryCounts[a]);
+            let top3Countries = sortedCountries.slice(0, 3);
+            console.log('Les 3 pays ayant acheté le plus:', top3Countries);
+        });
+}
+
+// Affichage sur le cmd
+const args = minimist(process.argv.slice(2));
+const filePath = args.file || 'clients.csv';
+
+extractData(filePath);
