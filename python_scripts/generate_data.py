@@ -26,13 +26,13 @@ def generate_clients(num_clients):
             'city': fake.city(),
             'country': fake.country(),
             # pour être un peu plus dans le thème:
-            'rigide_purchased': random.randint(0,5),
+            'rigide_purchased': random.randint(0,9),
             'retro_purchased': random.randint(0,5),
-            'original_purchased': random.randint(0,5),
-            'calendar_purchased': random.randint(0,5),
-            'grand_purchased': random.randint(0,5),
-            'magnets_purchased': random.randint(0,5),
-            'cadre_purchased': random.randint(0,5),
+            'original_purchased': random.randint(0,3),
+            'calendar_purchased': random.randint(0,2),
+            'grand_purchased': random.randint(0,7),
+            'magnets_purchased': random.randint(0,15),
+            'cadre_purchased': random.randint(0,2),
             }
             #calcul du montant dépensé avec les prix du site.
         client['total_amount_spent'] = (
